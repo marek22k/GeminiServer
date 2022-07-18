@@ -1,6 +1,6 @@
 Gem::Specification.new do |spec|
   spec.name        = "bgeminiserver"
-  spec.version     = "1.0.1"
+  spec.version     = "1.0.2"
   spec.summary     = "A small Gemini server, to customize with static and dynamic content."
   spec.description = "A small Gemini server, to customize with static and dynamic content. The Gem is documented with example. Before I extended the server, the server was only about 60 lines long. Gemini is a new internet protocol which is heavier than gopher, is lighter than the web, will not replace either, strives for maximum power to weight ratio, takes user privacy very seriously. (gemini://gemini.circumlunar.space/)"
   spec.authors     = ["Marek Kuethe"]
