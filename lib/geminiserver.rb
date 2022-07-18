@@ -5,20 +5,16 @@ require "uri"
 
 module GeminiPage
   
-  # Indexes a path of the file sysem (with folders) and creates corresponding
-  # handlers. There is no caching.
+  # Indexes a path of the file sysem (with folders) and creates corresponding handlers. There is no caching.
   # All files which do not have a mimetype with text/ are read binary.
   #
-  # @param serv [GeminiServer] The server object on which the handlers should be
-  # registered.
+  # @param serv [GeminiServer] The server object on which the handlers should be registered.
   # @param dir_path [String] Path to be indexed.
   # @param prefix [String] Prefix on the server.
   # @param extensions [Hash] List of file extensions and corresponding mimetypes.
   # @param default [String] Default mimetype
-  # @param file_prefix [String] Internal use. Path from the file system which
-  # should not be used as a prefix on the server.
-  # @example Indexes the downloads folder of the user "user" and makes the files
-  # available under "/computer/Downloads/".
+  # @param file_prefix [String] Internal use. Path from the file system which should not be used as a prefix on the server.
+  # @example Indexes the downloads folder of the user "user" and makes the files available under "/computer/Downloads/".
   #   GeminiPage.index_dir serv, "/home/user/Downloads/", "/computer/Downloads/"
   def self.index_dir serv, dir_path, prefix = "/", extensions = {"gmi" => "text/gemini"}, default = "application/octet-stream", file_prefix = nil
     file_prefix = dir_path if ! file_prefix
@@ -66,8 +62,7 @@ module GeminiPage
   #
   # @param func [Proc] Function which is called.
   # @param input_prompt [String] Prompt to be sent to the client.
-  # @param secret [String] True if the input contains sensitive data such as a
-  # password, false otherwise.
+  # @param secret [String] True if the input contains sensitive data such as a password, false otherwise.
   # @return [Proc]
   # @example A simple page in Gemini format, which has "Hello World!" as its headline.
   #   GeminiPage.require_input(->(conn, cert, input) {
@@ -228,10 +223,8 @@ class GeminiServer
   
   # Starts the server. However, the server does not yet respond to requests.
   # 
-  # Registers a handler for a specific path. The handler is a function (Proc),
-  # which gets three parameters:
-  # * The current connection to the client. Through this the function can return
-  # content to the client. Can be handled similar to a stream.
+  # Registers a handler for a specific path. The handler is a function (Proc), which gets three parameters:
+  # * The current connection to the client. Through this the function can return content to the client. Can be handled similar to a stream.
   # * The (if available) certificate sent by the client.
   # * The input (if any) sent by the client.
   #
@@ -246,8 +239,7 @@ class GeminiServer
     @handlers[path] = func
   end
   
-  # Copies a handler for another path. If the original handler is edited, the
-  # new one is not edited.
+  # Copies a handler for another path. If the original handler is edited, the new one is not edited.
   #
   # @param path [String]
   # @param copy_path [String]
@@ -264,11 +256,9 @@ class GeminiServer
     @handlers.delete path
   end
   
-  # Enables the server so that it responds to requests. This blocks the rest of
-  # the program.
+  # Enables the server so that it responds to requests. This blocks the rest of the program.
   #
-  # @param log [TrueClass, FalseClass] If enabled, successful requests from
-  # clients are output.
+  # @param log [TrueClass, FalseClass] If enabled, successful requests from clients are output.
   # @example
   #   serv.listen
   def listen log = false
