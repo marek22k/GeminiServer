@@ -2,6 +2,7 @@
 require "socket"
 require "openssl"
 require "uri"
+require "timeout"
 
 module GeminiPage
   
@@ -187,7 +188,7 @@ end
 #   serv.listen true
 class GeminiServer
   
-  attr_accessor :not_found_page
+  attr_accessor :not_found_page, @client_timeout
   
   # Creates a Gemini Server
   #
@@ -208,6 +209,7 @@ class GeminiServer
     @context.verify_callback = ->(passed, cert) { return true }
     @handlers = {}
     @not_found_page = GeminiPage.static_page("51", "Not found")
+    @client_timeout = 10
   end
   
   # Starts the server. However, the server does not yet respond to requests.
@@ -266,7 +268,14 @@ class GeminiServer
       begin
         Thread.new(@secure.accept) do |conn|
           begin
-            uri = URI(conn.gets.chomp)
+            begin
+              request_line = Timeout::timeout(@client_timeout) {
+                conn.gets.chomp
+              }
+            rescue Timeout::Error => e
+              conn.print "40 Timeout"
+            end
+            uri = URI(request_line)
 
             if uri.scheme != "gemini"
               conn.print "59 Unknown scheme: #{uri.scheme}\r\n"
