@@ -108,6 +108,24 @@ module GeminiPage
   end
 end
 
+class GenericGeminiError < RuntimeError
+  def initialize msg
+    super msg
+  end
+end
+
+class BadRequestGemini < GenericGeminiError
+  def initialize msg
+    super msg
+  end
+end
+
+class ProxyRequestRefusedGemini < GenericGeminiError
+  def initialize msg
+    super msg
+  end
+end
+
 # @example A test server
 #   cert = OpenSSL::X509::Certificate.new File.read "cert.crt"
 #   key  = OpenSSL::PKey::RSA.new File.read "priv.pem"
@@ -188,7 +206,7 @@ end
 #   serv.listen true
 class GeminiServer
   
-  attr_accessor :not_found_page, @client_timeout
+  attr_accessor :not_found_page, :client_timeout
   
   # Creates a Gemini Server
   #
@@ -268,17 +286,24 @@ class GeminiServer
       begin
         Thread.new(@secure.accept) do |conn|
           begin
-            begin
-              request_line = Timeout::timeout(@client_timeout) {
-                conn.gets.chomp
-              }
-            rescue Timeout::Error => e
-              conn.print "40 Timeout"
-            end
-            uri = URI(request_line)
+            request_line = Timeout::timeout(@client_timeout) {
+              conn.gets.chomp
+            }
 
-            if uri.scheme != "gemini"
-              conn.print "59 Unknown scheme: #{uri.scheme}\r\n"
+            if request_line == ""
+              raise BadRequestGemini.new "Request line is empty"
+            end
+            
+            if request_line.length > 1024
+              raise BadRequestGemini.new "URI is too longs"
+            end
+            
+            uri = URI(request_line)
+       
+            if uri.scheme == nil
+              raise BadRequestGemini.new "No scheme"
+            elsif uri.scheme != "gemini"
+              raise ProxyRequestRefusedGemini.new "Unknown scheme: #{uri.scheme}"
             end
 
             if @handlers[uri.path]
@@ -288,11 +313,16 @@ class GeminiServer
               page = @not_found_page.(conn, conn.peer_cert, URI.decode_www_form_component(uri.query.to_s))
             end
             
-            conn.flush
-            conn.close
+          rescue ProxyRequestRefusedGemini
+            conn.print "53 #{$!}"
+          rescue URI::InvalidURIError, BadRequestGemini
+            conn.print "59 #{$!}"
+          rescue Timeout::Error
+            conn.print "40 Timeout"
           rescue
             $stderr.puts $!
           end
+          conn.close
         end
       rescue
         $stderr.puts $!
